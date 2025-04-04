@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Protein Family Classifier</title>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f3ff;
+            --secondary: #7b61ff;
+            --cyber-yellow: #ffd300;
+            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: white;
+            font-family: 'Exo 2', sans-serif;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header Styles */
+        .header-glitch {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .neon-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            animation: neonPulse 1.5s infinite alternate;
+            text-shadow: 0 0 10px var(--primary);
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: rgba(255,255,255,0.8);
+            animation: floating 3s ease-in-out infinite;
+        }
+
+        /* Form Styles */
+        .sequence-form {
+            max-width: 800px;
+            margin: 0 auto 3rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .input-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .hologram-input {
+            width: 100%;
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            color: white;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            font-family: monospace;
+        }
+
+        .hologram-input:focus {
+            outline: none;
+            box-shadow: 0 0 20px rgba(0,243,255,0.3);
+            transform: scale(1.02);
+        }
+
+        /* Button Styles */
+        .cyber-button {
+            display: inline-block;
+            padding: 1rem 3rem;
+            margin-top: 1.5rem;
+            background: black;
+            border: none;
+            color: var(--cyber-yellow);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            clip-path: polygon(10% 0, 100% 0, 90% 100%, 0 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cyber-button:hover {
+            background: #111;
+            transform: translateY(-2px);
+            box-shadow: 0 0 25px rgba(0,243,255,0.4);
+        }
+
+        /* Results Section */
+        .results-section {
+            margin-top: 3rem;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .result-title {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            text-align: center;
+        }
+
+        .result-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid rgba(0,243,255,0.1);
+        }
+
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            border-bottom: 1px solid rgba(0,243,255,0.3);
+            padding-bottom: 0.5rem;
+        }
+
+        .result-text {
+            margin-bottom: 0.5rem;
+        }
+
+        .highlight {
+            color: var(--cyber-yellow);
+            font-weight: 600;
+        }
+
+        .confidence-value {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .prediction-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .prediction-item {
+            margin-bottom: 0.5rem;
+            padding: 0.8rem;
+            background: rgba(0,0,0,0.3);
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .prediction-item:hover {
+            background: rgba(0,0,0,0.5);
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .properties-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .property {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .property:hover {
+            background: rgba(0,0,0,0.3);
+        }
+
+        .property-name {
+            font-weight: 600;
+        }
+
+        .property-value {
+            color: var(--primary);
+        }
+
+        /* Plot Images */
+        .plot-container {
+            margin-top: 1rem;
+        }
+
+        .plot-image {
+            width: 100%;
+            border-radius: 10px;
+            border: 2px solid var(--primary);
+            transition: transform 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .hover-3d:hover .plot-image {
+            transform: perspective(1000px) rotateX(5deg) rotateY(5deg);
+        }
+
+        /* Error Message */
+        .error-message {
+            color: #ff4444;
+            padding: 1rem;
+            background: rgba(255,68,68,0.1);
+            border: 1px solid #ff4444;
+            border-radius: 5px;
+            margin: 1rem 0;
+            animation: shake 0.5s;
+        }
+
+        .warning {
+            color: #ffcc00;
+            font-weight: 600;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.6);
+        }
+
+        /* Animations */
+        @keyframes neonPulse {
+            from { text-shadow: 0 0 5px var(--primary), 0 0 10px var(--primary); }
+            to { text-shadow: 0 0 20px var(--primary), 0 0 30px var(--primary); }
+        }
+
+        @keyframes floating {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .neon-title {
+                font-size: 2.5rem;
+            }
+            
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hologram-input {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header-glitch">
+            <h1 class="neon-title">Protein Family Classifier</h1>
+            <p class="subtitle floating">Analyze protein sequences and predict their family classification</p>
+        </header>
+
+        <main>
+            <form method="POST" class="sequence-form">
+                <div class="form-group">
+                    <label for="protein_sequence" class="input-label">Enter Protein Sequence:</label>
+                    <textarea id="protein_sequence" name="protein_sequence" rows="5" 
+                              class="hologram-input"
+                              placeholder="Example: MAEGEITTFTALTEKFNLPPGNYKKPKLLYCSNGGHFLRILPDGTVDGTRDRSDQHIQLQLSAESVGEVYIKSTETGQYLAMDTSGLLYGSQTPSEECLFLERLEENHYNTYTSKKHAEKNWFVGLKKNGSCKRGPRTHYGQKAILFLPLPV">{{ sequence if sequence }}</textarea>
+                </div>
+                <button type="submit" class="cyber-button">
+                    <span class="cyber-text">Analyze</span>
+                </button>
+            </form>
+
+            {% if error %}
+                <div class="error-message shake">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            {% if prediction and properties %}
+                <div class="results-section">
+                    <h2 class="result-title">Analysis Results</h2>
+                    
+                    <div class="result-card">
+                        <h3 class="card-title">Protein Family Prediction</h3>
+                        {% if prediction.family_accession == 'MODEL_NOT_LOADED' %}
+                            <p class="warning pulse">Model not loaded - predictions unavailable</p>
+                        {% else %}
+                            <div class="prediction-result">
+                                <p class="result-text"><strong>Predicted Family:</strong> <span class="highlight">{{ prediction.family_accession }}</span></p>
+                                <p class="result-text"><strong>Confidence:</strong> <span class="confidence-value">{{ "%.2f"|format(prediction.confidence_score) }}%</span></p>
+                            </div>
+
+                            {% if prediction.top5_predictions %}
+                                <div class="top-predictions">
+                                    <h4 class="sub-card-title">Top 5 Predictions:</h4>
+                                    <ul class="prediction-list">
+                                        {% for family, score in prediction.top5_predictions %}
+                                            <li class="prediction-item">
+                                                <span class="family">{{ family }}</span>
+                                                <span class="score">{{ "%.2f"|format(score) }}%</span>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <div class="result-grid">
+                        <div class="result-card">
+                            <h3 class="card-title">Protein Properties</h3>
+                            <div class="properties-grid">
+                                <div class="property">
+                                    <span class="property-name">Molecular Weight</span>
+                                    <span class="property-value">{{ "%.2f"|format(properties.molecular_weight) }} Da</span>
+                                </div>
+                                <div class="property">
+                                    <span class="property-name">Isoelectric Point</span>
+                                    <span class="property-value">{{ "%.2f"|format(properties.isoelectric_point) }}</span>
+                                </div>
+                                <div class="property">
+                                    <span class="property-name">Instability Index</span>
+                                    <span class="property-value">{{ "%.2f"|format(properties.instability_index) }}</span>
+                                </div>
+                                <div class="property">
+                                    <span class="property-name">Aromaticity</span>
+                                    <span class="property-value">{{ "%.3f"|format(properties.aromaticity) }}</span>
+                                </div>
+                                <div class="property">
+                                    <span class="property-name">GRAVY</span>
+                                    <span class="property-value">{{ "%.3f"|format(properties.gravy) }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="result-card hover-3d">
+                            <h3 class="card-title">Secondary Structure</h3>
+                            <div class="plot-container">
+                                {% if ss_plot %}
+                                <img src="data:image/png;base64,{{ ss_plot }}" alt="Secondary Structure Plot" class="plot-image">
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="result-grid">
+                        <div class="result-card hover-3d">
+                            <h3 class="card-title">Amino Acid Composition</h3>
+                            <div class="plot-container">
+                                {% if aa_plot %}
+                                <img src="data:image/png;base64,{{ aa_plot }}" alt="Amino Acid Composition Plot" class="plot-image">
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="result-card hover-3d">
+                            <h3 class="card-title">Property Radar</h3>
+                            <div class="plot-container">
+                                {% if radar_plot %}
+                                <img src="data:image/png;base64,{{ radar_plot }}" alt="Property Radar Plot" class="plot-image">
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </main>
+
+        <footer>
+            <p>Protein Family Classifier &copy; 2023</p>
+        </footer>
+    </div>
+</body>
+</html>
